@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1220">
+  <title>ClimaSense | Estação Meteorológica</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M3 12h2M19 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            <circle cx="12" cy="12" r="5"/><path d="M16.5 15.5a4.5 4.5 0 0 1 4.3 3H9.2a3.2 3.2 0 0 1 .1-6.4 5 5 0 0 1 7.2 3.4Z" fill="currentColor" stroke="none" opacity=".9"/>
+          </svg>
+        </div>
+        <div>
+          <p class="brand-name">ClimaSense</p>
+          <p class="brand-subtitle">MONITORAMENTO AMBIENTAL</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="date-chip"><div id="dataAtual">--</div><strong id="horaAtual">--:--:--</strong></div>
+        <div class="live-pill offline" id="statusPill"><span class="live-dot"></span><span id="statusPillTexto">Conectando</span></div>
+      </div>
+    </header>
+
+    <section class="welcome">
+      <div>
+        <div class="eyebrow"><span>✦</span> PAINEL EM TEMPO REAL</div>
+        <h1>Sua estação meteorológica</h1>
+        <p class="intro">Acompanhe as condições do ambiente monitoradas pelos sensores do ESP32.</p>
+      </div>
+      <button class="refresh-button" id="botaoAtualizar" type="button" onclick="atualizarDados(true)">
+        <svg id="iconeRefresh" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/></svg>
+        Atualizar agora
+      </button>
+    </section>
+
+    <section class="dashboard" aria-label="Medições principais">
+      <article class="hero">
+        <div class="hero-content">
+          <div class="hero-heading">
+            <div>
+              <p class="hero-label">Temperatura atual</p>
+              <div class="hero-location">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h.01M7 12h.01M7 16h.01M11 8h6M11 12h6M11 16h6"/></svg>
+                Sensor DHT11 · Estação local
+              </div>
+            </div>
+            <div class="hero-icon" aria-hidden="true">
+              <svg width="45" height="45" viewBox="0 0 48 48" fill="none">
+                <circle cx="18" cy="17" r="8" fill="#FFD36A"/>
+                <g stroke="#FFD36A" stroke-width="2.4" stroke-linecap="round"><path d="M18 3v3M18 28v3M4 17h3M29 17h3M8 7l2 2M26 25l2 2M8 27l2-2M26 9l2-2"/></g>
+                <path d="M18 36.5a7.5 7.5 0 0 1 0-15c1.3 0 2.5.34 3.55.91A10 10 0 0 1 40 28.5a6.5 6.5 0 0 1-.5 13H18a2.5 2.5 0 0 1 0-5Z" fill="#F6FAFF"/>
+                <path d="M23 33h11" stroke="#D8E8FF" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="temperature-row">
+            <span class="temperature" id="temperatura">--</span><span class="degree">°C</span>
+          </div>
+          <p class="hero-state" id="sensacaoAmbiente">Aguardando leitura</p>
+          <p class="hero-caption">Leitura registrada pelo sensor conectado à placa.</p>
+          <div class="hero-bottom">
+            <div class="hero-mini">
+              <div class="hero-mini-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4-7-13-7-13S5 11 5 15a7 7 0 0 0 7 7Z"/></svg></div>
+              <div><div class="hero-mini-label">Umidade relativa</div><div class="hero-mini-value" id="umidadeResumo">-- %</div></div>
+            </div>
+            <div class="hero-mini">
+              <div class="hero-mini-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg></div>
+              <div><div class="hero-mini-label">Luminosidade</div><div class="hero-mini-value" id="luzResumo">--</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="side-grid">
+        <article class="metric-card">
+          <div class="metric-top">
+            <p class="metric-title">Umidade do ar</p>
+            <div class="metric-icon humidity"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4-7-13-7-13S5 11 5 15a7 7 0 0 0 7 7Z"/><path d="M9 16a3 3 0 0 0 3 3"/></svg></div>
+          </div>
+          <div>
+            <div class="metric-value-row"><span class="metric-value" id="umidade">--</span><span class="metric-unit">%</span></div>
+            <div class="metric-foot"><span class="small-dot"></span> Medição do DHT11</div>
+          </div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top">
+            <p class="metric-title">Nível de luminosidade</p>
+            <div class="metric-icon light"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg></div>
+          </div>
+          <div>
+            <div class="metric-value-row"><span class="metric-value" id="luminosidade">--</span><span class="metric-unit">/ 4095</span></div>
+            <div class="metric-foot"><span class="small-dot" style="background:#eda83a"></span> Leitura analógica do LDR</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Variação da temperatura</h2>
+            <p class="panel-subtitle">Histórico desta sessão no navegador</p>
+          </div>
+          <span class="period-pill">ÚLTIMAS LEITURAS</span>
+        </div>
+        <div class="chart-wrap" id="graficoArea">
+          <div class="chart-empty" id="graficoVazio">O gráfico será preenchido conforme novas leituras chegarem.</div>
+          <svg class="chart" id="grafico" viewBox="0 0 600 155" preserveAspectRatio="none" role="img" aria-label="Gráfico de variação de temperatura" hidden>
+            <defs><linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4c7df0" stop-opacity=".22"/><stop offset="100%" stop-color="#4c7df0" stop-opacity="0"/></linearGradient></defs>
+            <g class="chart-grid"><line x1="0" y1="20" x2="600" y2="20"/><line x1="0" y1="58" x2="600" y2="58"/><line x1="0" y1="96" x2="600" y2="96"/><line x1="0" y1="134" x2="600" y2="134"/></g>
+            <path id="graficoAreaPreenchida" class="chart-area" d=""/>
+            <polyline id="graficoLinha" class="chart-line" points=""/>
+            <g id="graficoPontos"></g>
+          </svg>
+        </div>
+        <div class="chart-times"><span id="horaInicial">Início</span><span>Agora</span></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Condições do ambiente</h2>
+            <p class="panel-subtitle">Resumo da leitura dos sensores</p>
+          </div>
+        </div>
+        <div class="condition-row">
+          <div class="condition-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg></div>
+          <div class="condition-info"><p class="condition-name">Luminosidade</p><p class="condition-desc" id="luzDescricao">Aguardando leitura do LDR</p></div>
+          <span class="condition-tag" id="ambienteTag">--</span>
+        </div>
+        <div class="condition-row">
+          <div class="condition-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10.2a4 4 0 1 0 3 3.87V3a3 3 0 0 0-6 0v14.07a4 4 0 1 0 3-3.87"/></svg></div>
+          <div class="condition-info"><p class="condition-name">Sensor de temperatura</p><p class="condition-desc">DHT11 · leitura ambiente</p></div>
+          <span class="condition-tag" id="tempTag">Aguardando</span>
+        </div>
+        <div class="condition-row">
+          <div class="condition-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4-7-13-7-13S5 11 5 15a7 7 0 0 0 7 7Z"/></svg></div>
+          <div class="condition-info"><p class="condition-name">Sensor de umidade</p><p class="condition-desc">DHT11 · umidade relativa</p></div>
+          <span class="condition-tag" id="umidTag">Aguardando</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="connection-bar">
+      <div class="connection-icon"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M9 7V4h6v3M10 11v2M14 11v2M10 17h4"/><path d="M3 10V5M1 7l2-2 2 2M21 10V5M19 7l2-2 2 2"/></svg></div>
+      <div class="connection-text">
+        <p class="connection-title">Conexão com a estação</p>
+        <p class="connection-subtitle" id="conexaoDescricao">Os dados são recebidos pelo Node.js através do cabo USB conectado ao ESP32.</p>
+      </div>
+      <div class="connection-status offline" id="conexaoStatus"><span class="small-dot"></span><span>Aguardando dados</span></div>
+    </section>
+
+    <footer>
+      <span>© <span id="anoAtual"></span> <strong>ClimaSense</strong> · Painel de monitoramento local</span>
+      <span>Atualização automática a cada 3 segundos · Sem banco de dados</span>
+    </footer>
+  </main>
+
+  <script>
+    const historicoTemperatura = [];
+    const MAX_PONTOS = 20;
+    let ultimaLeituraRecebida = null;
+    let requisicaoEmAndamento = false;
+
+    const el = (id) => document.getElementById(id);
+
+    function atualizarRelogio() {
+      const agora = new Date();
+      el("dataAtual").textContent = agora.toLocaleDateString("pt-BR", {
+        weekday: "long", day: "2-digit", month: "long", year: "numeric"
+      });
+      el("horaAtual").textContent = agora.toLocaleTimeString("pt-BR");
+      el("anoAtual").textContent = agora.getFullYear();
+    }
+
+    function definirConexao(online, texto) {
+      const pill = el("statusPill");
+      const conexao = el("conexaoStatus");
+      pill.classList.toggle("offline", !online);
+      conexao.classList.toggle("offline", !online);
+      el("statusPillTexto").textContent = texto;
+      conexao.querySelector("span:last-child").textContent = online ? "Recebendo dados" : texto;
+    }
+
+    function formatarNumero(valor, casas = 1) {
+      const n = Number(valor);
+      return Number.isFinite(n) ? n.toLocaleString("pt-BR", {
+        minimumFractionDigits: casas,
+        maximumFractionDigits: casas
+      }) : "--";
+    }
+
+    function atualizarClassificacao(ambiente, luminosidade, temperatura, umidade) {
+      const tag = el("ambienteTag");
+      tag.className = "condition-tag";
+      const tipo = String(ambiente || "").toLowerCase();
+
+      if (tipo.includes("escuro")) {
+        tag.textContent = "Escuro";
+        tag.classList.add("dark");
+        el("luzDescricao").textContent = "Pouca luminosidade detectada";
+      } else if (tipo.includes("medio") || tipo.includes("médio")) {
+        tag.textContent = "Médio";
+        tag.classList.add("medium");
+        el("luzDescricao").textContent = "Luminosidade intermediária detectada";
+      } else if (tipo.includes("claro")) {
+        tag.textContent = "Claro";
+        tag.classList.add("bright");
+        el("luzDescricao").textContent = "Boa luminosidade detectada";
+      } else {
+        tag.textContent = ambiente || "--";
+        el("luzDescricao").textContent = luminosidade == null ? "Aguardando leitura do LDR" : `Leitura analógica: ${luminosidade}`;
+      }
+
+      const tempTag = el("tempTag");
+      tempTag.className = "condition-tag";
+      if (temperatura == null) {
+        tempTag.textContent = "Aguardando";
+      } else if (temperatura < 18) {
+        tempTag.textContent = "Frio";
+        tempTag.classList.add("medium");
+      } else if (temperatura <= 29) {
+        tempTag.textContent = "Moderado";
+        tempTag.classList.add("bright");
+      } else {
+        tempTag.textContent = "Quente";
+        tempTag.classList.add("medium");
+      }
+
+      const umidTag = el("umidTag");
+      umidTag.className = "condition-tag";
+      if (umidade == null) {
+        umidTag.textContent = "Aguardando";
+      } else if (umidade < 30) {
+        umidTag.textContent = "Baixa";
+        umidTag.classList.add("medium");
+      } else if (umidade <= 60) {
+        umidTag.textContent = "Normal";
+        umidTag.classList.add("bright");
+      } else {
+        umidTag.textContent = "Alta";
+        umidTag.classList.add("medium");
+      }
+
+      if (temperatura != null) {
+        if (temperatura < 18) el("sensacaoAmbiente").textContent = "Ambiente mais frio";
+        else if (temperatura <= 29) el("sensacaoAmbiente").textContent = "Temperatura moderada";
+        else el("sensacaoAmbiente").textContent = "Ambiente mais quente";
+      } else {
+        el("sensacaoAmbiente").textContent = "Aguardando leitura";
+      }
+    }
+
+    function desenharGrafico() {
+      if (historicoTemperatura.length < 2) {
+        el("grafico").hidden = true;
+        el("graficoVazio").hidden = false;
+        return;
+      }
+
+      el("grafico").hidden = false;
+      el("graficoVazio").hidden = true;
+      const valores = historicoTemperatura.map(p => p.valor);
+      const min = Math.min(...valores);
+      const max = Math.max(...valores);
+      const amplitude = Math.max(max - min, 1);
+      const largura = 600;
+      const topo = 14;
+      const altura = 120;
+      const pontos = valores.map((v, i) => {
+        const x = 8 + (i / (valores.length - 1)) * (largura - 16);
+        const y = topo + ((max - v) / amplitude) * altura;
+        return { x, y, valor: v };
+      });
+      const coords = pontos.map(p => `${p.x},${p.y}`).join(" ");
+      const area = `M ${pontos[0].x},${topo + altura} ` +
+        pontos.map(p => `L ${p.x},${p.y}`).join(" ") +
+        ` L ${pontos[pontos.length - 1].x},${topo + altura} Z`;
+      el("graficoLinha").setAttribute("points", coords);
+      el("graficoAreaPreenchida").setAttribute("d", area);
+      el("graficoPontos").innerHTML = pontos.map(p =>
+        `<circle class="chart-point" cx="${p.x}" cy="${p.y}" r="4"><title>${formatarNumero(p.valor)} °C</title></circle>`
+      ).join("");
+      el("horaInicial").textContent = historicoTemperatura[0].hora;
+    }
+
+    async function atualizarDados(mostrarFeedback = false) {
+      if (requisicaoEmAndamento) return;
+      requisicaoEmAndamento = true;
+      const botao = el("botaoAtualizar");
+      if (mostrarFeedback) botao.disabled = true;
+
+      try {
+        const resposta = await fetch(`/api/dados?t=${Date.now()}`, { cache: "no-store" });
+        if (!resposta.ok) throw new Error(`A API respondeu com HTTP ${resposta.status}`);
+        const dados = await resposta.json();
+
+        const temperatura = typeof dados.temperatura === "number" ? dados.temperatura : null;
+        const umidade = typeof dados.umidade === "number" ? dados.umidade : null;
+        const luminosidade = typeof dados.luminosidade === "number" ? dados.luminosidade : null;
+
+        el("temperatura").textContent = temperatura == null ? "--" : formatarNumero(temperatura, 1);
+        el("umidade").textContent = umidade == null ? "--" : formatarNumero(umidade, 1);
+        el("umidadeResumo").textContent = umidade == null ? "-- %" : `${formatarNumero(umidade, 1)} %`;
+        el("luminosidade").textContent = luminosidade == null ? "--" : luminosidade.toLocaleString("pt-BR");
+        el("luzResumo").textContent = luminosidade == null ? "--" : luminosidade.toLocaleString("pt-BR");
+
+        if (dados.atualizadoEm) {
+          el("atualizacao"); // mantém o código compatível com versões do backend sem este campo na interface
+          el("conexaoDescricao").textContent = `Última leitura recebida em ${new Date(dados.atualizadoEm).toLocaleTimeString("pt-BR")}. Dados enviados pelo ESP32 por cabo USB.`;
+        }
+
+        atualizarClassificacao(dados.ambiente, luminosidade, temperatura, umidade);
+
+        const timestamp = dados.atualizadoEm ? new Date(dados.atualizadoEm).getTime() : null;
+        const leituraValida = temperatura !== null && umidade !== null && luminosidade !== null;
+        const recente = timestamp !== null && Number.isFinite(timestamp) && (Date.now() - timestamp < 12000);
+
+        if (leituraValida && recente) {
+          definirConexao(true, "Estação online");
+          const novaHora = new Date(timestamp).toLocaleTimeString("pt-BR");
+          if (timestamp !== ultimaLeituraRecebida) {
+            historicoTemperatura.push({ valor: temperatura, hora: novaHora, timestamp });
+            if (historicoTemperatura.length > MAX_PONTOS) historicoTemperatura.shift();
+            ultimaLeituraRecebida = timestamp;
+            desenharGrafico();
+          }
+        } else if (leituraValida && !recente) {
+          definirConexao(false, "Dados desatualizados");
+          el("conexaoDescricao").textContent = "A API tem uma leitura salva, mas ela não é recente. Verifique se o ESP32 continua conectado por USB.";
+        } else {
+          definirConexao(false, "Aguardando dados");
+          el("conexaoDescricao").textContent = "API acessível, aguardando a primeira leitura válida do ESP32 pela USB.";
+        }
+      } catch (erro) {
+        console.error("Não foi possível obter os dados:", erro);
+        definirConexao(false, "API indisponível");
+        el("conexaoDescricao").textContent = "Não foi possível consultar a API. Confirme se o servidor Node.js está em execução.";
+      } finally {
+        requisicaoEmAndamento = false;
+        if (mostrarFeedback) {
+          botao.disabled = false;
+          const icone = el("iconeRefresh");
+          icone.style.transform = "rotate(360deg)";
+          setTimeout(() => { icone.style.transform = "none"; }, 250);
+        }
+      }
+    }
+
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 1000);
+    atualizarDados();
+    setInterval(() => atualizarDados(), 3000);
+  </script>
+</body>
+</html>
